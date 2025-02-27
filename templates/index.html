@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restoran Menü</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <button id="cart-btn">Sepet (0)</button>
 
+    <!-- Kategoriler -->
+    <div class="categories">
+        {% for category in categories|sort(attribute='order_number') %}
+            <button class="category-btn" data-category="{{ category.id }}">{{ category.name }}</button>
+        {% endfor %}
+    </div>
+
+    <!-- Menü Öğeleri -->
+    <div class="menu-container">
+        {% for item in menu_items|sort(attribute='order_number') %}
+            <div class="menu-item" data-category="{{ item.category_id }}">
+                <div class="item-image" style="background-image: url('/static/{{ item.image }}');"></div>
+                <div class="item-content">
+                    <h3>{{ item.name }}</h3>
+                    <p>{{ item.description }}</p>
+                    <p class="price">{{ item.price }} TL</p>
+                    <button class="order-btn" data-item-id="{{ item.id }}">Siparişe Ekle</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Sipariş Modal -->
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Sepet Modal -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <div id="cart-items"></div>
+        </div>
+    </div>
+
+    <script>
+        const orderModal = document.getElementById('order-modal');
+        const cartModal = document.getElementById('cart-modal');
+        const cartBtn = document.getElementById('cart-btn');
+
+        // Kategori filtreleme
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const categoryId = this.getAttribute('data-category');
+                document.querySelectorAll('.menu-item').forEach(item => {
+                    item.style.display = item.getAttribute('data-category') == categoryId ? 'flex' : 'none';
+                });
+            });
+        });
+
+        // Sipariş modalını açma
+        document.querySelectorAll('.order-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-item-id');
+                fetch(`/order_modal/${itemId}`)
+                    .then(res => res.text())
+                    .then(html => {
+                        document.getElementById('modal-body').innerHTML = html;
+                        orderModal.style.display = 'block';
+                    });
+            });
+        });
+
+        // Modal kapatma
+        document.querySelectorAll('.close').forEach(close => {
+            close.addEventListener('click', function() {
+                orderModal.style.display = 'none';
+                cartModal.style.display = 'none';
+            });
+        });
+
+        // Sepet modalını açma
+        cartBtn.addEventListener('click', function() {
+            fetch('/cart')
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('cart-items').innerHTML = html;
+                    cartModal.style.display = 'block';
+                });
+        });
+    </script>
+</body>
+</html>
