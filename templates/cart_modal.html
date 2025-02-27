@@ -1,0 +1,37 @@
+<div class="cart-modal-content">
+    <h2>Sepet</h2>
+    <label>Masa Adı: <input type="text" id="table-name" value="Masa 1"></label>
+    {% if cart %}
+        <ul>
+        {% for item in cart %}
+            <li>
+                {{ item.quantity }} x {{ item.item.name }} 
+                {% if item.meat_type %}(Et: {{ item.meat_type }}){% endif %}
+                {% if item.sauces %}(Soslar: {{ item.sauces|join(', ') }}){% endif %}
+                {% if item.ingredients %}(İçerikler: {{ item.ingredients|join(', ') }}){% endif %}
+                - {{ item.item.price * item.quantity }} TL
+            </li>
+        {% endfor %}
+        </ul>
+        <p><strong>Toplam: {{ total }} TL</strong></p>
+        <button id="submit-cart">Siparişi Gönder</button>
+    {% else %}
+        <p>Sepetiniz boş.</p>
+    {% endif %}
+</div>
+
+<script>
+    document.getElementById('submit-cart').addEventListener('click', function() {
+        const tableName = document.getElementById('table-name').value;
+        fetch('/submit_order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `table_name=${encodeURIComponent(tableName)}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                document.getElementById('cart-modal').style.display = 'none';
+            });
+    });
+</script>

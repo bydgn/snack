@@ -1,0 +1,53 @@
+<div class="order-modal-content">
+    <img src="/static/{{ item.image }}" alt="{{ item.name }}" class="modal-image">
+    <h2>{{ item.name }}</h2>
+    <p>{{ item.description }}</p>
+    <p class="price">{{ item.price }} TL</p>
+
+    <form id="order-form" method="POST" action="/add_to_cart">
+        <input type="hidden" name="item_id" value="{{ item.id }}">
+
+        <label>Adet:</label>
+        <input type="number" name="quantity" value="1" min="1" required>
+
+        <label>Et Türü:</label>
+        <select name="meat_type">
+            <option value="">Seçiniz</option>
+            {% for meat in meat_types %}
+                <option value="{{ meat }}">{{ meat }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Soslar:</label>
+        {% for sauce in sauces %}
+            <label><input type="checkbox" name="sauces" value="{{ sauce }}"> {{ sauce }}</label>
+        {% endfor %}
+
+        <label>Ek İçerikler:</label>
+        {% for ingredient in ingredients %}
+            <label><input type="checkbox" name="ingredients" value="{{ ingredient }}"> {{ ingredient }}</label>
+        {% endfor %}
+
+        <button type="submit">Siparişe Ekle</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('order-form').addEventListener('submit', function(e) {
+        e.preventDefault(); // Varsayılan form gönderimini engelle
+        const formData = new FormData(this);
+        fetch('/add_to_cart', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message); // Kullanıcıya mesaj göster
+            document.getElementById('cart-btn').textContent = `Sepet (${data.cart_size})`; // Sepet butonunu güncelle
+            document.getElementById('order-modal').style.display = 'none'; // Modal'ı kapat
+        })
+        .catch(error => {
+            alert('Bir hata oluştu: ' + error);
+        });
+    });
+</script>
